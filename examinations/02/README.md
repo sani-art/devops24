@@ -112,9 +112,13 @@ incompatibilities.
 
 What happens if you run `ansible-inventory --list` in the directory you created above?
 
+- It prints the full inventory, all groups and hosts plus variables. A list of everything Ansible will use. 
+
 ## QUESTION B
 
 What happens if you run `ansible-inventory --graph` in the directory you created above?
+
+- It shows a tree view of the inventory, the groups and which hosts belong to each group. 
 
 ## QUESTION C
 
@@ -131,6 +135,8 @@ Now run:
 Study the output of this command.
 
 What does the `ansible_connection=local` part mean?
+
+- It makes Ansible run commands directly on the local controller instead of connecting over SSH. It showed success for all hosts, meaning the setup works correctly. 
 
 ## BONUS QUESTION
 
@@ -153,3 +159,4 @@ In your Ansible working directory where the `ansible.cfg' is, run
 You should get a pager displaying all available configuration values. How does it differ
 from when you run the same command in your usual home directory?
 
+- När jag kör ansible-config dump på ansible-upp katalogen (där ansible-cfg finns), så används den konfigurationsfilen, vilket ändrar vissa värden jämfört med när jag kör på hemkatalogen där ingen ansible-cfg finns. 
