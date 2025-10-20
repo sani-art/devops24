@@ -121,9 +121,16 @@ Run the exact same playbook again and study the output. What is the difference?
 
 What does the `ansible.builtin.debug` module actually do?
 
+- Det används för att visa information på skärmen när man kör en playbook. 
+Man kan använda den för att skriva ut variabler, som till exempel systemets hostname, för att kontrollera att allt fungerar som det ska. Modeulen ändrar inget på maskinen, utan används bara för att testa eller visa information. 
+
 ## QUESTION B
 
 What is the variable 'ansible_facts' and where does it come from?
+
+- Det är information som Ansible automtiskt samlar in om varje maskin innan den kör en playbook. 
+Det kan till exempel vara hostname, IP-adress, operativsystem och version. 
+Jag kan använda dessa fakta i mina playbooks för att visa eller använda systeminformation utan behöva skriva det manuellt. 
 
 ## QUESTION C
 
@@ -134,15 +141,20 @@ How do we now remove the software we installed through the playbook above? Make 
 playbook remove the exact same software we previously installed. Call the created
 playbook `03-uninstall-software.yml`.
 
+- Jag skapade en ny playbook som jag döpte till '03-uninstall-software.yml' och kopierade innehållet från den tidigare playbooken men ändrade namnet till 'uninstall' och uppgiften till 'remove'. Jag ändrade även state från 'present' till 'absent'. 
+Efter det körde jag 'ansible-playbook 03-uninstall-software.yml och det funkade. 
+
 ## BONUS QUESTION
 
 What happens when you run `ansible-playbook` with different options?
 
 Explain what each of these options do:
 * --verbose, -vv, -vvv, -vvvv
+- Visar mer detaljerad information om vad som händer under körningen. Ju mer 'v', desto mer detaljerad information visas.
 * --check
+- Gör en testkörning utan att ändra något på servrarna. Det visar vad som skulle hända.
 * --syntax-check
-
+- Kontrollerar playbooken om den är korrektskriven utan att köra något. 
 ## Study Material & Documentation
 
 * https://docs.ansible.com/ansible/latest/playbook_guide/playbooks.html#working-with-playbooks
