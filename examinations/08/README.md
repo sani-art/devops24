@@ -29,5 +29,12 @@ to authenticate as root:
 * Since we're authenticating through a socket, we should ignore the requirement for a `~/.my.cnf` file.
 * For simplicity's sake, let's grant `ALL` privileges on `webapp.*` to `webappuser`
 
+- Jag skapade filen 08-mariadb-config.yml genom att kopiera innehållet från föregående examination och la till modulen community.mysql. 
+I playbooken installerade jag paketet python3-PyMySQL så att Ansible kan hantera databasen.
+
+Sedan använde jag community.mysql_db för att skapa databasen webappdb, och community.mysql_user för att skapa användaren webappuser med lösenordet secretpassword. 
+
+Jag använde autentisiering via UNIX-socket (//car/lib/mysql/mysql.sock) för att logga in som root och gav användaren alla rättigheter till databasen. 
+
 # Documentation and Examples
 https://docs.ansible.com/ansible/latest/collections/community/mysql/index.html
