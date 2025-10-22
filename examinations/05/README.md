@@ -76,6 +76,9 @@ What does the output look like the first time you run this playbook?
 
 What does the output look like the second time you run this playbook?
 
+- Första gången jag körde playbooken stod det changed=1, vilket betyder att Ansible kopierade konfigurationsfilen https.conf till rätt plats efterson den inte fanns tidigare. 
+När jag körde samma playbook igen med 'ansible-playbook -v 05-web.yml', stod det changed=0, efterson filen redan fanns och ingen ändring behövdes. 
+
 # QUESTION B
 
 Even if we have copied the configuration to the right place, we still do not have a working https service
@@ -109,17 +112,58 @@ When you are done, verify that `nginx` serves web pages on both TCP/80 (http) an
     $ curl http://192.168.121.10
     $ curl --insecure https://192.168.121.10
 
-Again, these addresses are just examples, make sure you use the IP of the actual webserver VM.
+Again, these addresses are just examples, make sure you use the IP of the acltual webserver VM.
 
 Note also that `curl` needs the `--insecure` option to establish a connection to a HTTPS server with
 a self signed certificate.
+
+- För att få nginx att läsa in sin nya konfiguration igen utan at jag manuellt behöver köra sudo systemctl restart neginx på själva webservern, använda jag Ansible och modulen ansible.builtin.service. 
+
+Jag skapade en playbook som heter 05-web.yml med följande innehåll: 
+
+---
+- name: Install and configure nginx
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Ensure nginx is started and enabled
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Restart nginx to apply configuration
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+
+Sedan körde jag kommandot: ansible-playbook -i hosts 05-web.yml
+
+Playbooken installerade nginx, startade tjänsten och såg till att den startar automatiskt vid uppstart. 
+Jag verifierade att yjänsten fungerade genom att logga in på webservern och köra: sudo systemctl status nginx och resultatet visade Active: active (running)
+vilket betyder arr nginx körs som den ska. 
+Och sedan för att kontrollera från min kontrollmaskin använde jag: 
+  curl http://192.168.121.10
+  curl --insecure https://192.168.121.10
+Båda gav svar från servern, vilket bekräftar att nginx fungerar för både HTTP och HTTPS.
 
 # QUESTION C
 
 What is the disadvantage of having a task that _always_ makes sure a service is restarted, even if there is
 no configuration change?
 
+- Om man har en Ansible-task som alltid startar om en tjänst, även när ingen konfiguration har ändrats, leder det till onödiga omstartar och en risk för driftstörningar. Det bryter även mot Ansible idempotensprincip, eftersom samma playbook inte längre ger samma stabila resultat. 
+
 # BONUS QUESTION
 
 There are at least two _other_ modules, in addition to the `ansible.builtin.service` module that can restart
 a `systemd` service with Ansible. Which modules are they?
+
+- ansible.builtin.systemd : används direkt mot system och ger mer kontroll. 
+
+- ansible.builtin.command : kan köra kommandon som systemctl restart nginx, men de bryter mot idempotens. 
