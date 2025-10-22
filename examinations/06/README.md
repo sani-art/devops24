@@ -119,6 +119,10 @@ HINTS:
   also set the correct SELinux security context type on the directory and files. The context in question
   in this case should be `httpd_sys_content_t` for the `/var/www/example.internal/html/` directory.
 
+- Jag la till två tasks i 06-web-yml, en för att skapa katalgen /var/www/example.internal/html och en för att ladda upp index.html dit. 
+
+Jag använde modulerna file och copy. Efter att jag körde playbooken fick jag changed på båda, vilket visar att mappen skapades och filen laddades upp som den skulle. 
+
 # QUESTION B
 
 To each of the tasks that change configuration files in the webserver, add a `register: [variable_name]`.
@@ -167,6 +171,8 @@ There are several ways to accomplish this, and there is no _best_ way to do this
 
 Is this a good way to handle these types of conditionals? What do you think?
 
+- Det gör att playboken inte startar om tjänsten i onödan, vilket är ett smart och effektivt sätt att hantera konfigurationer. 
+
 # BONUS QUESTION
 
 Imagine you had a playbook with hundreds of tasks to be done on several hosts, and each one of these tasks
@@ -177,3 +183,7 @@ would you like the flow to work?
 
 Describe in simple terms what your preferred task flow would look like, not necessarily implemented in
 Ansible, but in general terms.
+
+- Om jag hade en stor playbook med många tasks och flera servrar skulle jag vilja att tjänster bara startas om när det verkligen behövs. 
+Jag skulle samla alla ändringar först, och bara göra en omstart i slutet om något faktiskt ändrats. 
+På så sätt minskar jag driftstopp och undviker onödiga avbrott. 
