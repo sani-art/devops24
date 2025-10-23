@@ -1,0 +1,54 @@
+---
+- name: Install and configure nginx
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Ensure nginx is started and enabled
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Ensure nginx configuration uses template
+      ansible.builtin.template:
+        src: templates/example.internal.conf.j2
+        dest: /etc/nginx/conf.d/example.internal.conf
+      register: conf_result
+
+    - name: Create directory structure for example.internal
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        mode: '0755'
+        recurse: yes
+        setype: httpd_sys_content_t
+
+    - name: Upload custom index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        mode: '0644'
+        setype: httpd_sys_content_t
+
+    - name: Create directory structure for example.internal
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        mode: '0755'
+
+    - name: Upload custom index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+      register: index_result
+
+    - name: Restart nginx to apply configuration
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: conf_result.changed or index_result.changed

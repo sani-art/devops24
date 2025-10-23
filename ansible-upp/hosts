@@ -1,0 +1,9 @@
+[web]
+192.168.121.154
+
+[db]
+192.168.121.69
+
+[all:vars]
+ansible_user=deploy
+ansible_ssh_private_key_file=/home/sayna/Desktop/devops24.sani/lab_environment/deploy_key

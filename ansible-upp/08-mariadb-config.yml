@@ -1,0 +1,29 @@
+---
+- name: Configure MariaDB and create database
+  hosts: db
+  become: true
+  tasks:
+    - name: Ensure required package for MySQL module is installed
+      ansible.builtin.package:
+        name: python3-PyMySQL
+        state: present
+
+    - name: Ensure MariaDB service is started and enabled
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: true
+
+    - name: Create database webappdb
+      community.mysql.mysql_db:
+        name: webappdb
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create user webappuser with privileges
+      community.mysql.mysql_user:
+        name: webappuser
+        password: secretpassword
+        priv: "webappdb.*:ALL"
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
