@@ -28,6 +28,9 @@ address of the virtual machine itself.
 
 Use the `ansible.builtin.template` module to accomplish this task.
 
+- Jag skapade en Jinja2-template av nginx-konfiguration och använde {{ ansible_default_ipv4.address }} i raderna för listen. På så sätt fylls serverns egen IP-adress in automatiskt när playbooken körs. 
+Jag använde ansible.builtin.template-modulen för att kopiera templaten till rätt plats och uppdatera konfigurationen. 
+
 # Resources and Documentation
 
 * https://docs.ansible.com/ansible/latest/collections/ansible/builtin/template_module.html
