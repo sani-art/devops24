@@ -14,4 +14,6 @@
   ansible.builtin.template:
     src: example.internal.conf.j2
     dest: /etc/nginx/conf.d/example.internal.conf
+  notify: reload nginx
+
 
