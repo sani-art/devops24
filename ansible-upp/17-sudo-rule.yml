@@ -1,0 +1,49 @@
+---
+- name: Enforce password-protected sudo for deploy user
+  hosts: all
+  become: true
+  vars:
+    deploy_password_hash: "$6$R1/hvQiKHJ7jT3Vp$.oHl5jpegGKGWQgPjqhBMiw4cnAqTUSCUVBQo1gYFTUCj9mLB3KrGfEXncC04Xyci8tUDqvKyWi6qQT0OCRCf0"
+  tasks:
+
+    - name: Set password for deploy user
+      ansible.builtin.user:
+        name: deploy
+        password: "{{ deploy_password_hash }}"
+
+    - name: Ensure sudoers file for deploy exists
+      ansible.builtin.file:
+        path: /etc/sudoers.d/deploy
+        state: touch
+        mode: '0440'
+
+    - name: Remove passwordless sudo rule
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/deploy
+        regexp: '^deploy.*NOPASSWD'
+        state: absent
+        validate: 'visudo -cf %s'
+
+    - name: Remove global passwordless sudo rule
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        regexp: '^deploy.*NOPASSWD'
+        state: absent
+        validate: 'visudo -cf %s'
+
+    - name: Add sudo rule requiring password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/deploy
+        line: 'deploy ALL=(ALL) ALL'
+        create: yes
+        mode: '0440'
+        validate: 'visudo -cf %s'
+
+    - name: Verify password-protected sudo is configured
+      ansible.builtin.command: grep -E '^deploy' /etc/sudoers.d/deploy
+      register: sudo_check
+      changed_when: false
+
+    - name: Show rule for deploy
+      ansible.builtin.debug:
+        msg: "{{ sudo_check.stdout }}"

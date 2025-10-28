@@ -1,0 +1,86 @@
+---
+- name: Security Compliance Checks (CIS - Almalinux)
+  hosts: all
+  become: true
+  gather_facts: true
+  
+  tasks: 
+    - name: Gather package facts
+      ansible.builtin.package_facts: 
+    
+    # 1.Kontrollera att firewalld är installerad
+    - name: Ensure firewalld package is installed
+      ansible.builtin.assert:
+        that: "'firewalld' in ansible_facts.packages"
+        success_msg: "Firewalld is installed"
+        fail_msg: "Firewalld is missing"
+
+    # 2.Kontrollera att SELinux-paket finns
+    - name: Ensure SELinux package is installed
+      ansible.builtin.assert:
+        that: "'libselinux' in ansible_facts.packages"
+        success_msg: "SELinux package is installed"
+        fail_msg: "SELinux package is missing" 
+
+    # 3.Kontrollera att telnet-server INTE finns
+    - name: Ensure telnet-server is not installed 
+      ansible.builtin.assert:
+        that: "'telnet-server' not in ansible_facts.packages"
+        success_msg: "Telnet-server is not installed"
+        fail_msg: "Telnet-server is installed" 
+
+    # 4.Kontrollera att rsh-server inte finns
+    - name: Ensure rsh-server is not installed 
+      ansible.builtin.assert:
+        that: "'rsh-server' not in ansible_facts.packages"
+        success_msg: "rsh-server is not installed"
+        fail_msg: "rsh-server is installed" 
+
+    # 5.Kontrollera att ftp-server inte finns
+    - name: Ensure vsftpd is not installed 
+      ansible.builtin.assert:
+        that: "'vsftpd' not in ansible_facts.packages"
+        success_msg: "vsftpd is not installed"
+        fail_msg: "vsftpd is installed" 
+
+    # 6.Kontrollera att chronyd finns
+    - name: Ensure chronyd is installed 
+      ansible.builtin.assert:
+        that: "'chrony' in ansible_facts.packages"
+        success_msg: "chrony is installed"
+        fail_msg: "chrony is not installed" 
+
+    # 7.Kontrollera at sudo är installerad
+    - name: Ensure sudo is installed 
+      ansible.builtin.assert:
+        that: "'sudo' in ansible_facts.packages"
+        success_msg: "sudo is installed"
+        fail_msg: "sudo is not installed" 
+
+    # 8.Kontrollera att root inte kan logga in via SSH
+    - name: Check SSH PermitRootLogin setting 
+      ansible.builtin.shell: "grep -E '^PermitRootLogin' /etc/ssh/sshd_config || echo 'PermitRootLogin no'"
+      register: rootlogin
+      changed_when: false
+    - ansible.builtin.assert:
+        that: "'PermitRootLogin no' in rootlogin.stdout"
+        success_msg: "Root lofin via SSH disabled"
+        fail_msg: "Root login via SSH enabled"
+
+    # 9.Kontrollera att systemlogging (rsyslog) är installed
+    - name: Ensure rsyslog is installed
+      ansible.builtin.assert:
+        that: "'rsyslog' in ansible_facts.packages"
+        success_msg: "rsyslog is installed"
+        fail_msg: "rsyslog is missing" 
+
+    # 10.Kontrollera att journald directory finns
+    - name: Ensure journald directory exists
+      ansible.builtin.stat:
+        path: /var/log/journal
+      register: journald
+    - ansible.builtin.assert:
+        that: journald.stat.exists
+        success_msg: "journald directory exists"
+        fail_msg: "journald directory is missing"
+       

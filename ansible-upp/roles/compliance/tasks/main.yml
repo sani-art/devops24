@@ -1,0 +1,75 @@
+---
+- name: Gather pakage facts
+  ansible.builtin.package_facts:
+
+- name: Ensure firewalld package is installed
+  ansible.builtin.assert:
+    that: "'firewalld' in ansible_facts.packages"
+    success_msg: "Firewalld is installed"
+    fail_msg: "Firewalld is missing"
+    
+- name: Ensure SELinux package is installed
+  ansible.builtin.assert:
+    that: "'libselinux' in ansible_facts.packages"
+    success_msg: "SELinux package is installed"
+    fail_msg: "SELinux package is missing" 
+
+- name: Ensure telnet-server is not installed 
+  ansible.builtin.assert:
+    that: "'telnet-server' not in ansible_facts.packages"
+    success_msg: "Telnet-server is not installed"
+    fail_msg: "Telnet-server is installed" 
+
+- name: Ensure rsh-server is not installed 
+  ansible.builtin.assert:
+    that: "'rsh-server' not in ansible_facts.packages"
+    success_msg: "rsh-server is not installed"
+    fail_msg: "rsh-server is installed" 
+
+- name: Ensure vsftpd is not installed 
+  ansible.builtin.assert:
+    that: "'vsftpd' not in ansible_facts.packages"
+    success_msg: "vsftpd is not installed"
+    fail_msg: "vsftpd is installed"
+
+- name: Ensure chronyd is installed 
+  ansible.builtin.assert:
+    that: "'chrony' in ansible_facts.packages"
+    success_msg: "chrony is installed"
+    fail_msg: "chrony is not installed" 
+
+- name: Ensure sudo is installed 
+  ansible.builtin.assert:
+    that: "'sudo' in ansible_facts.packages"
+    success_msg: "sudo is installed"
+    fail_msg: "sudo is not installed" 
+
+- name: Check SSH PermitRootLogin setting 
+  ansible.builtin.shell: "grep -E '^PermitRootLogin' /etc/ssh/sshd_config"
+  register: rootlogin
+  changed_when: false
+  failed_when: false
+
+- name: Verify SSH login in disabled
+  ansible.builtin.assert:
+    that: "'PermitRootLogin no' in rootlogin.stdout"
+    success_msg: "Root lofin via SSH disabled"
+    fail_msg: "Root login via SSH enabled"
+
+- name: Ensure rsyslog is installed
+  ansible.builtin.assert:
+    that: "'rsyslog' in ansible_facts.packages"
+    success_msg: "rsyslog is installed"
+    fail_msg: "rsyslog is missing" 
+
+- name: Ensure journald directory exists
+  ansible.builtin.stat:
+    path: /var/log/journal
+  register: journald
+
+- name: Verify journald directory exists 
+  ansible.builtin.assert:
+    that: journald.stat.exists
+    success_msg: "journald directory exists"
+    fail_msg: "journald directory is missing"
+
