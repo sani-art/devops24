@@ -1,0 +1,22 @@
+---
+- name: Install and configure nginx
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Copy https.conf to nginx configuration directory
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart nginx to apply configuration
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

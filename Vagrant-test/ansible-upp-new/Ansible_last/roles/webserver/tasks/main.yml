@@ -1,0 +1,41 @@
+---
+- name: Ensure Nginx is installed and configured
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Ensure Nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Ensure Nginx service is enabled and started
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Copy virtual host configuration
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Create document root directory
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        mode: "0755"
+        recurse: true
+
+    - name: Copy HTTPS configuration
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx

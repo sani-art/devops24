@@ -1,0 +1,13 @@
+---
+- name: Configure web servers
+  hosts: web
+  become: true
+  roles:
+    - role: webserver
+
+- name: Configure database servers
+  hosts: db
+  become: true
+  roles:
+    - role: dbserver
+

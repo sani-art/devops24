@@ -1,0 +1,72 @@
+---
+- name: Ensure Nginx is installed
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Ensure Nginx service is enabled and started
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+
+- name: Create directory structure for example.internal
+  ansible.builtin.file:
+    path: /var/www/example.internal/html
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Upload custom index.html
+  ansible.builtin.copy:
+    src: files/index.html
+    dest: /var/www/example.internal/html/index.html
+    mode: '0644'
+    setype: httpd_sys_content_t
+
+- name: Copy virtual host configuration
+  ansible.builtin.copy:
+    src: files/example.internal.conf
+    dest: /etc/nginx/conf.d/example.internal.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Create document root directory
+  ansible.builtin.file:
+    path: /var/www/example.internal/html
+    state: directory
+    mode: "0755"
+
+- name: Copy HTTPS configuration
+  ansible.builtin.copy:
+    src: files/https.conf
+    dest: /etc/nginx/conf.d/https.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Copy SSL certificate
+  ansible.builtin.copy:
+    src: files/server.key
+    dest: /etc/pki/nginx/private/server.key
+    mode: '0644'
+
+- name: Copy SSL key
+  ansible.builtin.copy:
+    src: files/server.crt
+    dest: /etc/pki/nginx/private/server.key
+    mode: '0600'
+
+- name: Ensure users exist with correct groups
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups }}"
+    append: true
+  loop:
+    - { name: "alovelace", groups: "wheel,video,audio" }
+    - { name: "aturing", groups: "tape" }
+    - { name: "edijkstra", groups: "tcpdump" }
+    - { name: "ghopper", groups: "wheel,audio" }

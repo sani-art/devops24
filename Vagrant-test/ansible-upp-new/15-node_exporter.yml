@@ -1,0 +1,84 @@
+---
+- name: Install and Configure Node Exporter
+  hosts: all
+  become: true
+
+  tasks: 
+    - name: Ensure node_exporter user exists
+      ansible.builtin.user:
+        name: node_exporter
+        shell: /usr/sbin/nologin
+        system: true
+        create_home: false
+
+    - name: Create directories for Node Exporter
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: node_exporter
+        group: node_exporter
+        mode: '0755'
+      loop: 
+        - /usr/local/bin
+        - /etc/node_exporter
+
+    - name: Download Node Exporter archive
+      ansible.builtin.get_url:
+        url: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+        dest: /tmp/node_exporter.tar.gz
+
+    - name: Extract Node Exporter
+      ansible.builtin.unarchive:
+        src: /tmp/node_exporter.tar.gz
+        dest: /tmp
+        remote_src: true
+
+    - name: Move Node Exporter binary to /usr/local/bin
+      ansible.builtin.copy:
+        src: /tmp/node_exporter-1.8.1.linux-amd64/node_exporter
+        dest: /usr/local/bin/node_exporter
+        owner: node_exporter
+        group: node_exporter
+        mode: '0755'
+        remote_src: true
+
+    - name: Create systemd service for Node Exporter
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/node_exporter.service
+        content: |
+          [Unit]
+          Description=Node Exporter Service
+          After=network.target
+
+          [Service]
+          User=node_exporter
+          Group=node_exporter
+          Type=simple
+          ExecStart=/usr/local/bin/node_exporter
+
+          [Install]
+          WantedBy=multi-user.target
+      notify:
+        - Restart Node Exporter
+
+    - name: Reload systemd to recognize Node Exporter service
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable Node Exporter service at boot
+      ansible.builtin.systemd:
+        name: node_exporter
+        enabled: true
+
+    - name: Start Node Exporter service
+      ansible.builtin.systemd:
+        name: node_exporter
+        state: started
+
+  handlers:
+    - name: Restart Node Exporter
+      ansible.builtin.systemd:
+        name: node_exporter
+        state: restarted
+        enabled: true
+
