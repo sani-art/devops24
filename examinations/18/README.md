@@ -81,5 +81,12 @@ Make the playbook use a default variable for the message that can be overriden b
 What is the relationship between the booleans you can use in Python, and the various "truthy/falsy" values
 you most often use in Ansible?
 
+- I Python räknas vissa värden som falska (t.ex. False,0,None,"",{},[]),medan allt annat är sant(truthy).
+Ansible bygger på Python men tolkar även YAML-värden som yes/no,on/off,true/false,1/0 på samma sätt. 
+
 What modules/filters are there in Ansible that can safely test for "truthy/falsy" values, and return something
 more stringent?
+
+- För att testa sådana värden på ett säkert sätt kan man använda filter som:
+. | bool-omvandlar värdet till True eller False
+. | truthy och | falsy testar mer exakt vad som är sant och falskt.
